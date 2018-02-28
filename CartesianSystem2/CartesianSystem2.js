@@ -319,6 +319,10 @@ var processing = new Processing(canvas, function(processing) {
                 }
             }
         };
+        gameObjects.applyCollision = function(object)
+        {
+                
+        };
         gameObjects.apply = function()
         {
             var usedObjects = {};
