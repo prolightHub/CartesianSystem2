@@ -321,7 +321,13 @@ var processing = new Processing(canvas, function(processing) {
         };
         gameObjects.applyCollision = function(object)
         {
-                
+            for(var col = 0; col < 0; col++)
+            {
+                for(var row = 0; row < 0; row++)
+                {
+                            
+                }
+            }
         };
         gameObjects.apply = function()
         {
@@ -346,6 +352,10 @@ var processing = new Processing(canvas, function(processing) {
                         //Use the object only once
                         if(!usedObjects[object.arrayName + object.index])
                         { 
+                            if(object.physics.movement === "mobile")
+                            {
+                                this.applyCollision(object);   
+                            }
                             object.update();
                             object.draw();
                         }
