@@ -319,13 +319,56 @@ var processing = new Processing(canvas, function(processing) {
                 }
             }
         };
-        gameObjects.applyCollision = function(object)
+        var rectrect = function(rect1, rect2)
         {
-            for(var col = 0; col < 0; col++)
+            return ((rect1.xPos + rect1.width > rect2.xPos && 
+                     rect1.xPos < rect2.xPos + rect2.width) &&
+                    (rect1.yPos + rect1.height > rect2.yPos && 
+                     rect1.yPos < rect2.yPos + rect2.height));
+        };
+        gameObjects.applyCollision = function(objectA)
+        {
+            if(objectA.physics.movement === "fixed")
             {
-                for(var row = 0; row < 0; row++)
+                return;
+            }
+            
+            var upperLeft = cameraGrid.getPlace(objectA.boundingBox.xPos, objectA.boundingBox.yPos);
+            var lowerRight = cameraGrid.getPlace(objectA.boundingBox.xPos + objectA.boundingBox.width, objectA.boundingBox.yPos + objectA.boundingBox.height);
+            
+            for(var col = upperLeft.col; col <= lowerRight.col; col++)
+            {
+                for(var row = upperLeft.row; row <= lowerRight.row; row++)
                 {
-                            
+                    var cell = cameraGrid[col][row]; 
+                    
+                    for(var i in cell)
+                    {
+                        //If object is going to be tested with itself skip this loop
+                        if(objectA.arrayName === cell[i].arrayName && objectA.index === cell[i].index)
+                        {
+                            continue;
+                        }
+                        
+                        var objectB = this.getObject(cell[i].arrayName).input(cell[i].index);
+                        
+                        var colliding = true;
+                        if(!(objectA.physics.shape === "rect" && objectB.physics.shape === "rect"))
+                        {
+                            //colliding = observer.colliding(objectA, objectB);
+                        }
+                        
+                        objectB.color = color(20, 100, 50);
+                        colliding = rectrect(objectA, objectB);
+                        
+                        if(colliding)
+                        {
+                            if(objectA.physics.solidObject && objectB.physics.solidObject)
+                            {
+                                objectB.color = color(50, 50, 50);        
+                            }
+                        }
+                    }
                 }
             }
         };
@@ -352,11 +395,8 @@ var processing = new Processing(canvas, function(processing) {
                         //Use the object only once
                         if(!usedObjects[object.arrayName + object.index])
                         { 
-                            if(object.physics.movement === "mobile")
-                            {
-                                this.applyCollision(object);   
-                            }
                             object.update();
+                            gameObjects.applyCollision(object);
                             object.draw();
                         }
                         
@@ -486,7 +526,6 @@ var processing = new Processing(canvas, function(processing) {
             {
                 var blockWidth = random(5, 10) * 5;
                 var blockHeight = random(5, 10) * 5;
-                gameObjects.getObject("block").add(levelInfo.xPos + random(0, levelInfo.width - blockWidth), levelInfo.yPos + random(0, levelInfo.height - blockHeight), blockWidth, blockHeight, color(20, 100, 50));
                 gameObjects.getObject("movingBlock").add(levelInfo.xPos + random(0, levelInfo.width - blockWidth), levelInfo.yPos + random(0, levelInfo.height - blockHeight), blockWidth, blockHeight, color(20, 50, 100));
             } 
             gameObjects.getObject("block").add(levelInfo.xPos + 280, levelInfo.yPos + 280, 500, 500, color(20, 100, 50));
@@ -511,8 +550,8 @@ var processing = new Processing(canvas, function(processing) {
                 cam.view(gameObjects.getObject("player").input(0));
                 drawBackground();
                 gameObjects.apply();
-                //gameObjects.drawBoundingBoxes();
-                //cameraGrid.draw();
+                gameObjects.drawBoundingBoxes();
+                cameraGrid.draw();
                 cam.draw();
             popMatrix();
             cam.drawOutline();
